@@ -1,0 +1,43 @@
+# <Project name>
+
+<One paragraph: what the product does and for whom.>
+
+## How to work in this repository
+
+- This repository follows the **django-backend-engineering** skill. Use it for
+  every change. Without the skill, follow `docs/engineering/project-policy.md` and
+  the conventions already in the code.
+- Precedence: platform and system instructions, then the user's explicit
+  instructions, then this file (and nested `AGENTS.md` files), then
+  `docs/engineering/project-policy.md`, then the skill.
+- The project's decisions, selected profiles, app layer order, authentication,
+  integrations, and pinned versions are in `docs/engineering/project-policy.md`.
+  The machine-readable architecture is `config/architecture.py`.
+- Plans stay in the chat unless the owner asks for a plan file. Never commit, push,
+  add dependencies, apply migrations to data that matters, or run destructive
+  commands without the owner's instruction.
+
+## Domain glossary
+
+| Term | Meaning | Code name |
+|---|---|---|
+| <business term> | <definition> | `<ModelOrField>` |
+
+## Everyday commands
+
+| Purpose | Command |
+|---|---|
+| Quality gate | `python deploy/run_quality_gates.py` |
+| PostgreSQL tests | `python manage.py test --settings=config.settings.test_postgres` |
+| Generated docs | `python deploy/generate_docs.py` |
+| Policy and versions | `python deploy/validate_project_policy.py` · `python deploy/check_version_drift.py` |
+| Local stack | `docker compose -f docker-compose.dev.yml up -d --no-build` |
+
+## Local stack specifics
+
+<Anything that differs from the profile: extra services, how to get test data. Never
+passwords.>
+
+## Current focus and out of scope
+
+<What is being built now; what must not be touched without asking.>

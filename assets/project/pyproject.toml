@@ -1,0 +1,63 @@
+# Baseline tool configuration (opinionated-api profile). Adjust `coverage.run.source`
+# to list every project package.
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+extend-exclude = ["migrations", "static", "media", ".venv", "backups"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "C4", "SIM", "DTZ", "S", "RUF", "N", "RET", "PGH"]
+ignore = [
+    "E501",    # the formatter owns wrapping
+    "RUF012",  # Django/DRF class attributes are descriptors, not mutable state
+    "N818",    # domain errors are named after the condition (OrderNotCancellable)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S105", "S106", "S108"]
+"config/settings/*.py" = ["F403", "F405"]
+"config/settings/base.py" = ["F403", "F405", "I001"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+strict = true
+warn_unreachable = true
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["celery.*", "django_redis.*", "encrypted_fields.*", "drf_spectacular.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Celery publishes no type information, so its task decorators are untyped.
+module = ["*.tasks"]
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = ["*.migrations.*", "*.tests.*"]
+ignore_errors = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
+
+[tool.coverage.run]
+branch = true
+source = ["common", "events"]
+omit = ["*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_empty = true
+precision = 1
+
+[tool.bandit]
+exclude_dirs = ["migrations", "static", "media", ".venv", "tests", "backups"]
+# These are enforced line by line by ruff's S rules, where each exception must
+# carry a written reason (`# noqa: S311 - jitter, not security`).
+skips = ["B311", "B404", "B603"]

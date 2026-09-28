@@ -1,0 +1,4 @@
+interface:
+  display_name: "Django Backend Engineering"
+  short_description: "Build, review, and operate production Django backends"
+  default_prompt: "Use $django-backend-engineering to implement this change following the project policy."
