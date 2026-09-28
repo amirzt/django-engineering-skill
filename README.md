@@ -58,6 +58,31 @@ brings in the following, all real and tested, not just guidance:
 | **A docs generator** — data dictionary, error catalog, event catalog, OpenAPI | Reference docs are generated from the code and checked for staleness (`--check`), so they can't silently drift from what's actually deployed. |
 | **A single quality gate** (`deploy/run_quality_gates.py`) | Lint, types, migrations, safety checks, tests, coverage, and a dependency audit run as one command, identically for a developer and for CI. |
 | **A project-policy mechanism** | Architecture decisions (stack, apps, queues, limits) are recorded once in `docs/engineering/project-policy.md` and read by every future session — decisions get made once, not re-litigated per task. |
+| **One `Asset` model for every file** | Uploads, generated files, fetched remote files, and internal files all go through one reusable model with content-based upload validation and signed-URL delivery — instead of every feature growing its own file-handling code. |
+| **Redis discipline** — instances split by failure semantics, bounded pools, atomic ops, keyed locks | A cache that's briefly unavailable degrades the app; a session store or lock that's unavailable must not silently corrupt state. The two are never the same Redis instance by accident. |
+| **A blocked-egress test tier** (`config/test_egress.py`) | Tests can't accidentally make a real network call to a third party — a flaky test that "works on my machine" because it hit a live API is caught immediately. |
+| **Health endpoints, metrics, and alert/runbook pairing** | `/health/ready` reflects real dependency state, not just "the process is up," and every alert this skill defines points at a runbook step, not just a page. |
+| **Enforced naming conventions** | Constraints, indexes, serializers, views, URL names, domain events, error codes, Celery tasks, Redis keys, and metrics each have one required format — greppable and predictable across every app, not decided per file. |
+| **Operational runbooks** | Release and rollback, secret/password rotation, backup and restore, data backfill, dead-letter triage, and incident response are written as step-by-step procedures, not left to be improvised during an incident. |
+| **Swappable profiles** — e.g. `opinionated-api` | A profile pins a complete, opinionated stack (Django 6, DRF, JWT with a Redis allowlist, Celery, cursor pagination, explicit `APIView`s over `ViewSet`s, forbidden-library list, Conventional Commits, CI job order) so a new project starts from real decisions instead of a blank slate — and a project that wants different choices simply doesn't select it. |
+
+## Everything the skill covers
+
+`references/` is read on demand, not all at once — `SKILL.md`'s routing table
+sends the agent to only the file(s) a task needs. Between them they cover:
+
+- **Architecture & file organization** — where code goes, layering rules, settings structure.
+- **Models & migrations** — model conventions, safe schema changes, expand/backfill/switch/contract.
+- **Data integrity & concurrency** — constraints, locking, guarded updates, leases, state machines, money, idempotency.
+- **Domain events & background jobs** — the outbox pattern, Celery rules, durable jobs, dead-letters.
+- **API design** — resources, validation layering, the error envelope, pagination, bulk actions, versioning.
+- **Security, tenancy & integrations** — authorization scoping, sessions, secrets, webhooks, supply chain.
+- **Files** — the shared `Asset` model, upload validation, signed delivery.
+- **Redis & caching** — failure semantics, locks, key naming, caching discipline.
+- **Observability & performance** — structured logs, correlation, metrics, alerts, measuring before claiming.
+- **Testing** — organization, database tiers, the egress guard, fakes, concurrency tests, the quality gate.
+- **Comments & docs** — what's worth documenting and what isn't.
+- **Operations** — the runbooks above.
 
 ## What's inside
 
