@@ -9,14 +9,14 @@ your agent looks for skills.
 Clone (or copy) this repository into your skills directory:
 
 ```bash
-git clone https://github.com/amirhosseinzt/django-backend-engineering-skill \
+git clone https://github.com/amirzt/django-engineering-skill \
   ~/.claude/skills/django-backend-engineering
 ```
 
 Project-local instead of global (only this repo gets the skill):
 
 ```bash
-git clone https://github.com/amirhosseinzt/django-backend-engineering-skill \
+git clone https://github.com/amirzt/django-engineering-skill \
   .claude/skills/django-backend-engineering
 ```
 

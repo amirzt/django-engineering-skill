@@ -1,7 +1,7 @@
 # Django Backend Engineering
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![CI](https://github.com/amirhosseinzt/django-backend-engineering-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/amirhosseinzt/django-backend-engineering-skill/actions/workflows/ci.yml)
+[![CI](https://github.com/amirzt/django-engineering-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/amirzt/django-engineering-skill/actions/workflows/ci.yml)
 
 A [Claude Code / Agent Skill](https://docs.claude.com/en/docs/claude-code/skills) that
 makes AI agents write **production-grade Django backends**, consistently, across
@@ -45,7 +45,7 @@ See [INSTALL.md](INSTALL.md) for exact steps per agent (Claude Code, and others)
 Quick version for Claude Code:
 
 ```bash
-git clone https://github.com/amirhosseinzt/django-backend-engineering-skill ~/.claude/skills/django-backend-engineering
+git clone https://github.com/amirzt/django-engineering-skill ~/.claude/skills/django-backend-engineering
 ```
 
 Then, in any repository, just ask the agent to use the
