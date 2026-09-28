@@ -19,8 +19,9 @@ from __future__ import annotations
 
 import argparse
 import re
-import tomllib
 from pathlib import Path
+
+import tomllib
 
 
 def normalize(name: str) -> str:
@@ -76,7 +77,7 @@ def images(root: Path) -> dict[str, list[tuple[str, str]]]:
         # Build stages (`FROM x AS stage`) may be reused by later FROM lines.
         stages = {
             s.lower()
-            for s in re.findall(r"^\s*FROM\s+\S+\s+AS\s+(\S+)", text, re.I | re.M)
+            for s in re.findall(r"^\s*FROM\s+\S+\s+AS\s+(\S+)", text, re.IGNORECASE | re.MULTILINE)
         }
         for line in text.splitlines():
             match = re.match(
