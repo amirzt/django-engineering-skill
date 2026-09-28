@@ -13,19 +13,51 @@ enforced, how errors are shaped, how background jobs are made idempotent, and ho
 a change gets reviewed before it ships — the same rules every time, for every
 project that adopts it.
 
-## Why this exists
+## Why use this
 
 AI agents are good at writing Django code and bad at staying consistent about
-it: one task puts business logic in a view, the next in a signal, the next in a
-serializer. Invariants get enforced with `if` statements instead of database
-constraints. Every project ends up with a different shape.
+it: one task puts business logic in a view, the next in a signal, the next in
+a serializer. Invariants get enforced with `if` statements instead of
+database constraints. Retries happen for operations that aren't safe to
+repeat. Every project — and often every session within the same project —
+ends up with a different shape.
 
-This skill is an opinionated answer to that: a router document (`SKILL.md`), a
-set of reference documents the agent reads only when the task needs them, a
-project-policy mechanism so a repository's decisions are recorded once and
-followed forever after, and a bootstrap kit of real, tested code
-(`assets/project/`) that a new project can start from instead of an empty
-folder.
+This skill is an opinionated answer to that, for three reasons:
+
+- **The rules survive between sessions.** A fresh agent session has no memory
+  of the last one's decisions. This skill puts those decisions in a
+  `references/` file and a project policy, so every session reads the same
+  rules instead of re-deriving (and re-drifting from) them.
+- **Correctness is enforced, not just requested.** The bootstrap kit ships
+  database constraints, guarded updates, a migration-safety checker, and
+  automated tests that fail CI when the architecture rules are broken —
+  instead of relying on an agent (or a reviewer) to remember to check.
+- **It defers to what's already there.** The skill reads a repository's own
+  `AGENTS.md`, `CLAUDE.md`, and project policy first, and only fills in
+  where the project hasn't already decided something (see
+  [Precedence](#precedence)). It's meant to reduce drift, not to impose
+  itself on a codebase that already has conventions.
+
+## What it adds to your project
+
+Adopting this skill (via the bootstrap, see [Quick start](#quick-start))
+brings in the following, all real and tested, not just guidance:
+
+| Adds | Why |
+|---|---|
+| **Model bases** — `PublicModel`, `TimestampedModel`, `AppendOnlyModel` | Public-facing IDs that don't leak sequential row counts, consistent `created_at`/`updated_at`, and a base for records that must never be mutated after creation (audit trails, ledgers). |
+| **A domain error taxonomy** — `DomainError`, `ErrorCategory`, `DependencyUnavailable`, `PolicyDenied` | One vocabulary for "why did this fail" across the whole codebase, instead of every app inventing its own exceptions. |
+| **A DRF exception handler + error envelope** | Every endpoint returns errors in the same shape with the same fields — callers write one error-parsing path, not one per endpoint. |
+| **A constraint-violation translator** (`raise_for_constraint`) | A database constraint failure becomes a clean domain error instead of a raw, endpoint-specific `IntegrityError` leaking to the client. |
+| **External-error classification** — retryable / permanent / ambiguous | Retries only happen when they're actually safe. An ambiguous outcome (e.g. a payment call that timed out after the charge may have gone through) is never retried blindly. |
+| **Structured, correlated logging** — request ID and job ID propagation, JSON formatter | A single request can be traced end-to-end across an HTTP view and the Celery worker it triggered, in log aggregation, not just in a debugger. |
+| **Durable jobs** — claim, lease, fencing token, retry, dead-letter | Background work stays correct under Celery's at-least-once delivery: no duplicate side effects from a task that ran twice, and stuck jobs surface instead of vanishing. |
+| **Domain events + transactional outbox** | One app reacting to a change in another goes through an explicit, typed event — not a signal quietly carrying business logic, and not a direct cross-app import. |
+| **A migration-safety checker** | Destructive migrations (dropping a column, renaming in place) are blocked unless explicitly approved — expand-and-contract is the default, not something you hope everyone remembers. |
+| **Architecture-enforcement tests** — module boundaries, model conventions, event registry completeness | Layering rules ("services don't import views", "every model uses a base", "every emitted event has a registered handler") are checked by a test suite, so a violation fails CI instead of passing review by accident. |
+| **A docs generator** — data dictionary, error catalog, event catalog, OpenAPI | Reference docs are generated from the code and checked for staleness (`--check`), so they can't silently drift from what's actually deployed. |
+| **A single quality gate** (`deploy/run_quality_gates.py`) | Lint, types, migrations, safety checks, tests, coverage, and a dependency audit run as one command, identically for a developer and for CI. |
+| **A project-policy mechanism** | Architecture decisions (stack, apps, queues, limits) are recorded once in `docs/engineering/project-policy.md` and read by every future session — decisions get made once, not re-litigated per task. |
 
 ## What's inside
 
